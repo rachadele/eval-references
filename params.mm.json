@@ -1,0 +1,21 @@
+{
+    "organism": "mus_musculus",
+    "census_version": "2024-07-01",
+    "cutoff": 0,
+    "seed": 42,
+    "ref_collections": [
+        "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
+        "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
+        "Tabula Muris Senis"
+    ],
+    "mapping_file": "/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/meta/census_map_mouse_author.tsv",
+    "ref_keys": [
+        "subclass",
+        "class",
+        "family",
+        "global"
+    ],
+    "use_gap": false,
+    "subsample_ref": 50,
+    "process_executor": "local"
+}
