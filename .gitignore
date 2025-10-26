@@ -1,0 +1,9 @@
+*h5ad
+*rds
+*__pycache__/
+*.ipynb_checkpoints
+.DS_Store
+.vscode/
+.nextflow*
+work/
+**tsv
