@@ -440,19 +440,17 @@ workflow {
     LOOCV_SEURAT.out.loocv_probs_seurat
     .set { loocv_probs_seurat }
 
-loocv_probs_seurat
-  .map { list -> list.sort { it.getName() } }  // ensures stable order
-  .flatMap { list ->
-      list.collect { file ->
+    loocv_probs_seurat
+    .flatMap { list ->
+        list.collect { file ->
           held_out_name = file.getName().split('_loocv.prediction.scores.tsv')[0]
           [held_out_name, file]
       }
   }
   .set { seurat_loocv_probs }
 
-loocv_obs_seurat
-  .map { list -> list.sort { it.getName() } }
-  .flatMap { list ->
+    loocv_obs_seurat
+    .flatMap { list ->
       list.collect { file ->
           held_out_name = file.getName().split('_loocv.obs.tsv')[0]
           [held_out_name, file]
@@ -475,16 +473,18 @@ loocv_obs_seurat
     LOOCV_SCVI.out.loocv_probs_scvi
     .set { loocv_probs_scvi }
 
-    loocv_probs_scvi.flatten()
-    .map { file ->
-        held_out_name = file.getName().split('_loocv.prob.df.tsv')[0]
-        [held_out_name, file]
+    loocv_probs_scvi.flatMap() { list ->
+        list.collect { file ->
+          held_out_name = file.getName().split('_loocv.prob.df.tsv')[0]
+          [held_out_name, file]
+      }
     }.set { scvi_loocv_probs }
 
-    loocv_obs_scvi.flatten()
-    .map { file ->
+    loocv_obs_scvi.flatMap() { list ->
+        list.collect { file ->
         held_out_name = file.getName().split('_loocv.obs.tsv')[0]
         [held_out_name, file]
+    }
     }.set { scvi_loocv_obs }
 
     scvi_loocv_results = scvi_loocv_probs
