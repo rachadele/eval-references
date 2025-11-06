@@ -440,27 +440,32 @@ workflow {
     LOOCV_SEURAT.out.loocv_probs_seurat
     .set { loocv_probs_seurat }
 
-    loocv_probs_seurat.flatMap { list ->
-        list.collect { file ->
-            held_out_name = file.getName().split('_loocv.prediction.scores.tsv')[0]
-            [held_out_name, file]
-        }
-    }.set { seurat_loocv_probs }
-    
-    loocv_obs_seurat.flatMap { list ->
-        list.collect { file ->
-            held_out_name = file.getName().split('_loocv.obs.tsv')[0]
-            [held_out_name, file]
-        }
-    }.set { seurat_loocv_obs }
+loocv_probs_seurat
+  .map { list -> list.sort { it.getName() } }  // ensures stable order
+  .flatMap { list ->
+      list.collect { file ->
+          held_out_name = file.getName().split('_loocv.prediction.scores.tsv')[0]
+          [held_out_name, file]
+      }
+  }
+  .set { seurat_loocv_probs }
 
-    
+loocv_obs_seurat
+  .map { list -> list.sort { it.getName() } }
+  .flatMap { list ->
+      list.collect { file ->
+          held_out_name = file.getName().split('_loocv.obs.tsv')[0]
+          [held_out_name, file]
+      }
+  }
+  .set { seurat_loocv_obs }
 
-    seurat_loocv_probs
-    .combine(seurat_loocv_obs, by: 0)
-    .map { held_out_name, probs, obs -> [held_out_name, 'seurat', probs, obs] }
-    .set { seurat_loocv_results }
 
+    seurat_loocv_results = seurat_loocv_probs
+    .join(seurat_loocv_obs, by: 0)
+    .map { held_out_name, probs, obs -> 
+        [held_out_name, 'seurat', probs, obs] 
+    }
     // SCVI LOOCV ---------------------------------------------
 
     LOOCV_SCVI(whole_cortex_adata, ref_keys)
@@ -469,35 +474,29 @@ workflow {
     LOOCV_SCVI.out.loocv_probs_scvi
     .set { loocv_probs_scvi }
 
-    loocv_probs_scvi.flatMap { list ->
-        list.collect { file ->
+    loocv_probs_scvi.flatten()
+    .map { file ->
         held_out_name = file.getName().split('_loocv.prob.df.tsv')[0]
         [held_out_name, file]
-        }
     }.set { scvi_loocv_probs }
 
-    loocv_obs_scvi.flatMap { list ->
-        list.collect { file ->
+    loocv_obs_scvi.flatten()
+    .map { file ->
         held_out_name = file.getName().split('_loocv.obs.tsv')[0]
         [held_out_name, file]
-        }
     }.set { scvi_loocv_obs }
 
+    scvi_loocv_results = scvi_loocv_probs
+    .join(scvi_loocv_obs, by: 0)
+    .map { held_out_name, probs, obs -> 
+        [held_out_name, 'scvi', probs, obs] 
+    }
 
-    scvi_loocv_probs
-    .combine(scvi_loocv_obs, by: 0)
-    .map { held_out_name, probs, obs -> [held_out_name, 'scvi', probs, obs] }
-    .set { scvi_loocv_results }
-
-    // view the channels to confirm correct mapping
-
-    //scvi_loocv_results.view()
-    //seurat_loocv_results.view()
-
+    scvi_loocv_results.view()
     // combine results
-    //scvi_loocv_results.concat(seurat_loocv_results)
-    //.set { combined_loocv_results }
-   // CLASSIFY_LOOCV(combined_loocv_results, ref_keys, ref_region_mapping) 
+    scvi_loocv_results.concat(seurat_loocv_results)
+    .set { combined_loocv_results }
+   // CLASSIFY_LOOCV(combined_loocv_results, ref_keys, ref_region_mapping)
 
 
       //// Pairwise prediction processes (requires map_valid_labels) -----------------------

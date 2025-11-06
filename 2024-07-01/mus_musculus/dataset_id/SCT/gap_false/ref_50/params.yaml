@@ -2,7 +2,7 @@ organism: mus_musculus
 census_version: 2024-07-01
 ref_keys: [subclass, class, family, global]
 subsample_ref: 50
-cutoff: 0.75
+cutoff: 0
 remove_unknown: true
 ref_split: dataset_id
 ref_collections: [A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation, An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types, Tabula Muris Senis]

@@ -17,5 +17,8 @@
     ],
     "use_gap": false,
     "subsample_ref": 50,
-    "process_executor": "local"
+    "process_executor": "slurm",
+    "batch_fields": [
+        "dataset_title"
+    ]
 }
