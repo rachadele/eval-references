@@ -464,7 +464,8 @@ loocv_obs_seurat
     seurat_loocv_results = seurat_loocv_probs
     .join(seurat_loocv_obs, by: 0)
     .map { held_out_name, probs, obs -> 
-        [held_out_name, 'seurat', probs, obs] 
+        def method = 'seurat'
+        [held_out_name, method, probs, obs] 
     }
     // SCVI LOOCV ---------------------------------------------
 
@@ -489,7 +490,8 @@ loocv_obs_seurat
     scvi_loocv_results = scvi_loocv_probs
     .join(scvi_loocv_obs, by: 0)
     .map { held_out_name, probs, obs -> 
-        [held_out_name, 'scvi', probs, obs] 
+        def method = 'scvi'
+        [held_out_name, method, probs, obs] 
     }
 
     scvi_loocv_results.view()
