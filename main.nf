@@ -345,7 +345,7 @@ process CLASSIFY_LOOCV {
     publishDir path: "${params.outdir}/cutoff_${params.cutoff}/loocv/${method}/${held_out_name}/predicted_meta", pattern: "predicted_meta**", mode: 'copy'
 
     input:
-    tuple val(held_out_name), val(method), path(loocv_probs), path(loocv_obs)
+    tuple val(held_out_name), val(method), path(loocv_files) 
     val ref_keys
     val ref_region_mapping
 
@@ -355,14 +355,17 @@ process CLASSIFY_LOOCV {
     path "predicted_meta/**tsv"
 
     script:
+    def obs_file = loocv_files.find { it.name.contains('obs.tsv') }
+    def probs_file = loocv_files.find { it.name.contains('prediction.scores.tsv') || it.name.contains('prob.df.tsv') }
+   
     """
     python $projectDir/bin/classify.py \\
         --query_name ${held_out_name} \\
-        --obs ${loocv_obs} \\
+        --obs ${obs_file} \\
         --ref_name whole_cortex \\
         --ref_keys ${ref_keys} \\
         --cutoff ${params.cutoff} \\
-        --probs ${loocv_probs} \\
+        --probs ${probs_file} \\
         --mapping_file ${params.mapping_file} \\
         --ref_region_mapping ${ref_region_mapping} \\
         --method ${method} \\
@@ -441,30 +444,23 @@ workflow {
     .set { loocv_probs_seurat }
 
     loocv_probs_seurat
-    .flatMap { list ->
-        list.collect { file ->
-          held_out_name = file.getName().split('_loocv.prediction.scores.tsv')[0]
-          [held_out_name, file]
-      }
+    .flatten()
+    .map { file ->
+        def method = 'seurat'
+        def held_out_name = file.getName().split('_loocv.prediction.scores.tsv')[0]
+        [held_out_name, method, file]
   }
   .set { seurat_loocv_probs }
 
     loocv_obs_seurat
-    .flatMap { list ->
-      list.collect { file ->
-          held_out_name = file.getName().split('_loocv.obs.tsv')[0]
-          [held_out_name, file]
-      }
-  }
+    .flatten()
+    .map { file ->
+        def method = 'seurat'
+        def held_out_name = file.getName().split('_loocv.obs.tsv')[0]
+        [held_out_name, method, file]
+    }
   .set { seurat_loocv_obs }
 
-
-    seurat_loocv_results = seurat_loocv_probs
-    .join(seurat_loocv_obs, by: 0)
-    .map { held_out_name, probs, obs -> 
-        def method = 'seurat'
-        [held_out_name, method, probs, obs] 
-    }
     // SCVI LOOCV ---------------------------------------------
 
     LOOCV_SCVI(whole_cortex_adata, ref_keys)
@@ -473,32 +469,30 @@ workflow {
     LOOCV_SCVI.out.loocv_probs_scvi
     .set { loocv_probs_scvi }
 
-    loocv_probs_scvi.flatMap() { list ->
-        list.collect { file ->
-          held_out_name = file.getName().split('_loocv.prob.df.tsv')[0]
-          [held_out_name, file]
-      }
+    loocv_probs_scvi.flatten()
+    .map { file ->
+        def method = 'scvi'
+        def held_out_name = file.getName().split('_loocv.prob.df.tsv')[0]
+        [held_out_name, method,file]
     }.set { scvi_loocv_probs }
 
-    loocv_obs_scvi.flatMap() { list ->
-        list.collect { file ->
-        held_out_name = file.getName().split('_loocv.obs.tsv')[0]
-        [held_out_name, file]
-    }
+    loocv_obs_scvi.flatten()
+    .map { file ->
+        def method = 'scvi'
+        def held_out_name = file.getName().split('_loocv.obs.tsv')[0]
+        [held_out_name, method, file]
     }.set { scvi_loocv_obs }
 
-    scvi_loocv_results = scvi_loocv_probs
-    .join(scvi_loocv_obs, by: 0)
-    .map { held_out_name, probs, obs -> 
-        def method = 'scvi'
-        [held_out_name, method, probs, obs] 
-    }
+    scvi_loocv_obs
+    .concat(scvi_loocv_probs)
+    .concat(seurat_loocv_obs)
+    .concat(seurat_loocv_probs)
+    .groupTuple(by: [0,1])
+    .set { loocv_grouped }
 
-    scvi_loocv_results.view()
+    loocv_grouped.view()
     // combine results
-    scvi_loocv_results.concat(seurat_loocv_results)
-    .set { combined_loocv_results }
-   // CLASSIFY_LOOCV(combined_loocv_results, ref_keys, ref_region_mapping)
+    CLASSIFY_LOOCV(loocv_grouped, ref_keys, ref_region_mapping)
 
 
       //// Pairwise prediction processes (requires map_valid_labels) -----------------------
