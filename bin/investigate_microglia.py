@@ -109,6 +109,11 @@ def main():
    
     obs = test_subset.obs.copy()
     obs = classify_cells(query=obs, ref_keys=ref_keys, cutoff=0, probabilities=prob_df, mapping_df=mapping_df, use_gap=False)
-    
+   
+    class_metrics = evaluate_sample_predictions(obs, ref_keys, mapping_df)
+    for key in ref_keys:
+      plot_confusion_matrix("test", "train", key, class_metrics[key]["confusion"], output_dir=outdir)
+
+
 if __name__ == "__main__":
     main()
