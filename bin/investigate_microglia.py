@@ -65,6 +65,8 @@ def main():
     ref_subset = sc.read_h5ad(h5ad_path)
     seed = args.seed
     resolution = args.resolution
+    ref_subset.var.set_index('feature_name', inplace=True)
+
     sc.pp.normalize_total(ref_subset, target_sum=1e4) 
     sc.pp.log1p(ref_subset)
     os.makedirs(outdir, exist_ok=True)

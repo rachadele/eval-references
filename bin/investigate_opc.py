@@ -21,7 +21,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Download model file based on organism, census version, and tree file.")
     parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
     parser.add_argument('--census_version', type=str, default='2024-07-01', help='Census version (e.g., 2024-07-01)')
-d    parser.add_argument('--h5ad', type=str, default="/space/grp/rschwartz/rschwartz/eval-references/2024-07-01/mus_musculus/dataset_id/SCT/gap_false/ref_500/refs/scvi_integrated/whole_cortex.h5ad", help='Path to the h5ad file')
+    parser.add_argument('--h5ad', type=str, default="/space/grp/rschwartz/rschwartz/eval-references/2024-07-01/mus_musculus/dataset_id/SCT/gap_false/ref_500/refs/scvi_integrated/whole_cortex.h5ad", help='Path to the h5ad file')
     parser.add_argument('--resolution', type=float, default=1.0, help='Resolution for Leiden clustering')
     parser.add_argument('--seed', type=int, default=42, help='Random seed for UMAP')
     parser.add_argument('--ref_keys', nargs='+', default=["subclass","class","family","global"], help='Reference keys for classification')
@@ -54,6 +54,9 @@ def main():
     ref_subset = sc.read_h5ad(h5ad_path)
     seed = args.seed
     resolution = args.resolution
+    # make feature_name index of var
+    ref_subset.var.set_index('feature_name', inplace=True)
+    # Normalize and log1p transform
     sc.pp.normalize_total(ref_subset, target_sum=1e4) 
     sc.pp.log1p(ref_subset)
     os.makedirs(outdir, exist_ok=True)
