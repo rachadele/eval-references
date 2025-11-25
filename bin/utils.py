@@ -64,8 +64,8 @@ def subsample_and_save(dataset_path, n_cells=1000):
     
 # Subsample x cells from each cell type if there are n>x cells present
 #ensures equal representation of cell types in reference
-def subsample_cells(data, filtered_ids, subsample=500, relabel_path="/biof501_proj/meta/relabel/census_map_human.tsv", 
-                    ref_keys=["rachel_subclass","rachel_class","rachel_family"], seed=42):
+def subsample_cells(data, filtered_ids, subsample=500, relabel_path=None, 
+                    ref_keys=["subclass","class","family"], seed=42):
     random.seed(seed)         # For `random`
     np.random.seed(seed)      # For `numpy`
     scvi.settings.seed = seed # For `scvi`
