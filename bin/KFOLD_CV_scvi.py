@@ -29,6 +29,7 @@ import argparse
 import os
 import json
 from types import SimpleNamespace
+from sklearn.model_selection import StratifiedKFold
 
 # Function to parse command line arguments
 def parse_arguments():
@@ -73,7 +74,6 @@ def main():
     y = ref.obs[granular_key].values
     idx_all = np.arange(ref.n_obs)
 
-    from sklearn.model_selection import StratifiedKFold
     skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
 
     all_prob_dfs = []

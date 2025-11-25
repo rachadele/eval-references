@@ -49,7 +49,9 @@ ref = readRDS(ref_path)
 ref_key <- ref_keys[1]
 
 # Get all unique dataset_title values
+# remove "whole cortex"
 dataset_titles <- unique(ref@meta.data$dataset_title)
+dataset_titles <- dataset_titles[dataset_titles != "whole_cortex"]
 
 all_pred_scores <- list()
 all_test_meta <- list()

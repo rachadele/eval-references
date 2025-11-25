@@ -81,12 +81,10 @@ workflow {
 
 
     Channel
-        .fromPath("${params.outdir_prefix}//${params.subsample_ref}/cutoff_${params.cutoff}/loocv/*/*/*/*/**summary.scores.tsv", type: 'file')
+        .fromPath("${params.outdir_prefix}/ref_${params.subsample_ref}/*/loocv/*/*/*/**summary.scores.tsv", type: 'file')
         .flatten()
         .toList()
         .set { loocv_results_files }
-
-	
 
     // Aggregate KFOLD cross-validation results
     AGGREGATE_RESULTS_KFOLD_CV(kfold_cv_results_files)
@@ -99,7 +97,7 @@ workflow {
     // Aggregate LOOCV results
     AGGREGATE_RESULTS_LOOCV(loocv_results_files)
     .set { all_loocv_metrics }
-    /// Plot LOOCV results
+    // Plot LOOCV results
     PLOT_LOOCV_RESULTS(all_loocv_metrics)
 }
 

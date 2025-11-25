@@ -22,4 +22,3 @@ for subsample_ref in "${subsample_ref_values[@]}"; do
                     -process.executor local 
             done
         done
-    done

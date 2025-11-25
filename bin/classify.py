@@ -73,7 +73,10 @@ def main():
         use_gap = False 
     method = args.method
 
-
+    filename_prefix = ref_name
+    if query_name:
+        filename_prefix += f"_{query_name}"
+        
     probs = pd.read_csv(args.probs, sep="\t")
     mapping_df = pd.read_csv(args.mapping_file, sep="\t")
     obs = pd.read_csv(args.obs, sep="\t")
@@ -90,7 +93,7 @@ def main():
     obs = map_valid_labels(obs, ref_keys, mapping_df)
     class_metrics = evaluate_sample_predictions(obs, ref_keys, mapping_df)
 
-    obs.to_csv(os.path.join(outdir,f"{ref_name}.predictions.{cutoff}.tsv"), index=False, sep="\t")
+    obs.to_csv(os.path.join(outdir,f"{filename_prefix}.predictions.{cutoff}.tsv"), index=False, sep="\t")
 
     #class_metrics = update_classification_report(class_metrics, ref_keys)
 
@@ -98,7 +101,7 @@ def main():
     for key in ref_keys:
         outdir = os.path.join("confusion")
         os.makedirs(outdir, exist_ok=True)
-        plot_confusion_matrix(ref_name, ref_name, key, class_metrics[key]["confusion"], output_dir=outdir)
+        plot_confusion_matrix(query_name, ref_name, key, class_metrics[key]["confusion"], output_dir=outdir)
 
     # Collect F1 scores
     performance_metrics = []
@@ -110,6 +113,7 @@ def main():
         for label, metrics in label_metrics.items():
             performance_metrics.append({
                 'reference': ref_name,
+                'query': query_name,
                 'label': label,
                 'f1_score': metrics['f1_score'],
                 'accuracy': metrics['accuracy'],
@@ -133,7 +137,7 @@ def main():
     
     outdir = "label_transfer_metrics"
     os.makedirs(outdir, exist_ok=True)
-    df.to_csv(os.path.join(outdir, f"{ref_name}_{method}_{cutoff}.summary.scores.tsv"), sep="\t", index=False)
+    df.to_csv(os.path.join(outdir, f"{filename_prefix}_{method}_{cutoff}.summary.scores.tsv"), sep="\t", index=False)
     
 if __name__ == "__main__":
     main()

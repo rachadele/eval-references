@@ -33,8 +33,8 @@ from types import SimpleNamespace
 # Function to parse command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Cross-validate classifier using k-fold cross-validation on reference data")
-    parser.add_argument('--ref_path', type=str, default="/space/grp/rschwartz/rschwartz/eval-references/work/8f/3b1c4802884f8b1cd5f56121d59a15/whole_cortex.h5ad")
-    parser.add_argument('--ref_keys', type=str, nargs='+', default=["subclass", "class", "family"])
+    parser.add_argument('--ref_path', type=str, default="/space/grp/rschwartz/rschwartz/eval-references/work/a4/1e64a5ecfabc7a4b635c7c2224660e/whole_cortex.h5ad")
+    parser.add_argument('--ref_keys', type=str, nargs='+', default=["subclass", "class", "family","global"])
     parser.add_argument('--n_folds', type=int, default=5, help='Number of folds for k-fold cross-validation')
 
     if __name__ == "__main__":
@@ -62,9 +62,8 @@ def main():
 
   # Get all unique dataset titles
   dataset_titles = ref.obs["dataset_title"].unique()
+  dataset_titles = dataset_titles[dataset_titles != "whole_cortex"]  # Remove the overall dataset if present
 
-  all_prob_dfs = []
-  all_obs_dfs = []
 
   for held_out_title in dataset_titles:
       # Split reference into train and test by dataset_title

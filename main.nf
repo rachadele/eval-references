@@ -293,7 +293,7 @@ process CLASSIFY_PAIRWISE {
 
 process LOOCV_SEURAT {
     conda '/home/rschwartz/anaconda3/envs/r4.3'
-    publishDir path: "${params.outdir}/cutoff_${params.cutoff}/loocv/seurat/${ref_name}/", pattern: "**tsv", mode: "copy"
+  //  publishDir path: "${params.outdir}/cutoff_${params.cutoff}/loocv/seurat/${ref_name}/", pattern: "**tsv", mode: "copy"
 
     input:
     path ref_path
@@ -320,7 +320,7 @@ process LOOCV_SEURAT {
 
 process LOOCV_SCVI {
     conda '/home/rschwartz/anaconda3/envs/scanpyenv'
-    publishDir path: "${params.outdir}/cutoff_${params.cutoff}/loocv/scvi/${ref_name}/", pattern: "**tsv", mode: "copy"
+   // publishDir path: "${params.outdir}/cutoff_${params.cutoff}/loocv/scvi/${ref_name}/", pattern: "**tsv", mode: "copy"
 
     input:
     path ref_path
@@ -357,12 +357,11 @@ process CLASSIFY_LOOCV {
     script:
     def obs_file = loocv_files.find { it.name.contains('obs.tsv') }
     def probs_file = loocv_files.find { it.name.contains('prediction.scores.tsv') || it.name.contains('prob.df.tsv') }
-   
+    
     """
     python $projectDir/bin/classify.py \\
-        --query_name ${held_out_name} \\
         --obs ${obs_file} \\
-        --ref_name whole_cortex \\
+        --ref_name ${held_out_name} \\
         --ref_keys ${ref_keys} \\
         --cutoff ${params.cutoff} \\
         --probs ${probs_file} \\
@@ -490,8 +489,8 @@ workflow {
     .groupTuple(by: [0,1])
     .set { loocv_grouped }
 
-    loocv_grouped.view()
     // combine results
+
     CLASSIFY_LOOCV(loocv_grouped, ref_keys, ref_region_mapping)
 
 
