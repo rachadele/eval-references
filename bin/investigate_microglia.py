@@ -2,27 +2,16 @@
 
 import warnings
 warnings.filterwarnings("ignore")
-
 from pathlib import Path
 import os
-import sys
-import random
 import argparse
-import json
-
 import scanpy as sc
 import numpy as np
 import pandas as pd
 import anndata as ad
-import cellxgene_census
-import cellxgene_census.experimental
-import scvi
-from scipy.sparse import csr_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 import yaml
-
-import utils
 from utils import *
 from sklearn.model_selection import train_test_split
 
@@ -31,7 +20,6 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Download model file based on organism, census version, and tree file.")
     parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
     parser.add_argument('--census_version', type=str, default='2024-07-01', help='Census version (e.g., 2024-07-01)')
-    parser.add_argument('--subsample_ref', type=int, default=50)
     parser.add_argument('--h5ad', type=str, default="/space/grp/rschwartz/rschwartz/eval-references/2024-07-01/mus_musculus/dataset_id/SCT/gap_false/ref_500/refs/scvi_integrated/whole_cortex.h5ad", help='Path to the h5ad file')
     parser.add_argument('--resolution', type=float, default=1.0, help='Resolution for Leiden clustering')
     parser.add_argument('--seed', type=int, default=42, help='Random seed for UMAP')
